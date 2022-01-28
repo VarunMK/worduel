@@ -19,8 +19,8 @@ const Home = () => {
     const toast = useToast();
     const [room, setRoom] = useState<String>('');
     const [conn, setConn] = useState<boolean>(false);
-    const [disabled,setDisabled]=useState<boolean>(true);
-    const [resp,setResp]=useState<String>("");
+    const [disabled, setDisabled] = useState<boolean>(true);
+    const [resp, setResp] = useState<String>('');
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
     const { register, handleSubmit, control } = useForm();
     const onSubmit = (formData: any) => {
@@ -74,13 +74,13 @@ const Home = () => {
         socket.on('disconnect', () => {
             console.log('Socket disconnected Sadge');
         });
-        socket.on('gameresp',(message)=>{
+        socket.on('gameresp', (message) => {
             console.log(message);
-        })
+        });
     }, []);
-    const sendReq = (formData:any) => {
+    const sendReq = (formData: any) => {
         console.log(formData.gameresp);
-        socket.emit('sendresp',room,formData.gameresp);
+        socket.emit('sendresp', room, formData.gameresp);
     };
     return (
         <>
@@ -110,6 +110,7 @@ const Home = () => {
                                 Join a room / Create a room:
                             </FormLabel>
                             <Input
+                                htmlFor="roomId"
                                 type="text"
                                 {...register('roomId')}
                                 flex={{ lg: '1', base: 'none' }}
@@ -130,19 +131,18 @@ const Home = () => {
                     </form>
                 ) : (
                     <form
-                        onSubmit={handleSubmit(sendReq)}
+                        onSubmit={handleSubmit(onSubmit)}
                         style={{ textAlign: 'center', marginTop: '18px' }}
                     >
-                        <FormControl id="gameresp">
-                            <FormLabel fontWeight="bold" fontSize="md">
-                                Your answer:
-                            </FormLabel>
-                            <Input
-                                type="text"
-                                {...register('gameresp')}
-                                flex={{ lg: '1', base: 'none' }}
-                            />
-                        </FormControl>
+                        <Text fontWeight="bold" fontSize="md">
+                            Your answer:
+                        </Text>
+                        <Input
+                            htmlFor="gameresp"
+                            type="text"
+                            {...register('gameresp')}
+                            flex={{ lg: '1', base: 'none' }}
+                        />
                         <Button
                             marginTop="4"
                             size="lg"
