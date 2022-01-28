@@ -18,11 +18,14 @@ io.on("connection", (socket) => {
     redisClient.get(roomId).then((msg)=>{
       if(msg==1){
         redisClient.incr(roomId);
-        socket.emit('connectionsuccessful','Joined the room!',2);
+        socket.join(roomId);
+        socket.to(roomId).emit('secondplrjoined',true);
+        socket.emit('connectionsuccessful','Joined the room!',2,word);
       }else if(msg==null){
         redisClient.set(roomId,1);
         redisClient.expire(roomId,cstttl);
-        socket.emit('connectionsuccessful','Created the room! ',1);
+        socket.join(roomId);
+        socket.emit('connectionsuccessful','Created the room! ',1,word);
       }
       else{
         socket.emit('senderror','Room is Full',102);
@@ -32,12 +35,7 @@ io.on("connection", (socket) => {
     });
   })
   socket.on('sendresp',(roomId,msg)=>{
-    if(msg==word){
-      socket.emit('gameresp',true);
-    }
-    else{
-      socket.emit('gameresp',false);
-    }
+    socket.to(roomId).emit('oppresp',msg);
   })
 });
 

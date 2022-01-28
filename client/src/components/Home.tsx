@@ -6,33 +6,27 @@ import {
     Heading,
     Input,
     Text,
-    useToast,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import { Controller, useForm } from 'react-hook-form';
-import { send } from 'process';
+import { evaluate } from '../utils/eval';
+import { makeToast } from '../utils/handleMsgs';
+import { useForm } from 'react-hook-form';
 
 const socket = io('http://localhost:8080');
 
 const Home = () => {
-    const toast = useToast();
     const [room, setRoom] = useState<String>('');
     const [conn, setConn] = useState<boolean>(false);
     const [disabled, setDisabled] = useState<boolean>(true);
-    const [resp, setResp] = useState<String>('');
+    const [word, setWord] = useState<String>('');
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
     const { register, handleSubmit, control } = useForm();
+    var tries = 0;
     const onSubmit = (formData: any) => {
         setButtonLoading(true);
         if (formData.roomId.length < 5) {
-            toast({
-                title: 'Invalid Room Code',
-                description: 'Make sure your room code is 5 characters long.',
-                status: 'warning',
-                duration: 6000,
-                isClosable: true,
-            });
+            makeToast('Invalid Room Code','Make sure your room code is 5 characters long.','warning');
             setButtonLoading(false);
         } else {
             setRoom(formData.roomId);
@@ -40,47 +34,46 @@ const Home = () => {
         }
     };
     useEffect(() => {
-        socket.on('connectionsuccessful', (message, no_of_users) => {
+        socket.on('connectionsuccessful', (message, no_of_users, resp) => {
             setButtonLoading(false);
             setConn(true);
             if (no_of_users == 1) {
-                toast({
-                    title: message,
-                    description: 'Invite others to the room!',
-                    status: 'success',
-                    duration: 6000,
-                    isClosable: true,
-                });
+                makeToast(message,'Invite others to the room!','success');
             } else {
-                toast({
-                    title: message,
-                    description: 'Both the players have joined the lobby!',
-                    status: 'success',
-                    duration: 6000,
-                    isClosable: true,
-                });
+                makeToast(message,'Both the players have joined the lobby!','success');
+                setDisabled(false);
             }
+            setWord(resp);
         });
+        socket.on('secondplrjoined',(msg)=>{
+            if(msg){
+                setDisabled(false);
+                makeToast('New Player Joined!','Both the players have joined the lobby!','success');
+            }
+        })
         socket.on('senderror', (message, code) => {
-            toast({
-                title: message,
-                description: 'Sadly the room is full :(',
-                status: 'error',
-                duration: 6000,
-                isClosable: true,
-            });
+            makeToast(message,'Sadly the room is full :(','error');
             setButtonLoading(false);
         });
         socket.on('disconnect', () => {
             console.log('Socket disconnected Sadge');
         });
-        socket.on('gameresp', (message) => {
-            console.log(message);
+        socket.on('oppresp',(message)=>{
+            makeToast(message,'','success');
         });
     }, []);
     const sendReq = (formData: any) => {
-        console.log(formData.gameresp);
-        socket.emit('sendresp', room, formData.gameresp);
+        var data = evaluate(formData.gameresp, word);
+        tries += 1;
+        socket.emit('sendresp',room,data);
+        if (tries == 5 && data==[2,2,2,2,2]) {
+            makeToast('Congrats!','The word was: '+word,'success');
+            setDisabled(true);
+        }
+        else if(tries==5){
+            makeToast("Sorry you didn't guess the word :(","The word was: "+word,"warning");
+            setDisabled(true);
+        }
     };
     return (
         <>
@@ -131,7 +124,7 @@ const Home = () => {
                     </form>
                 ) : (
                     <form
-                        onSubmit={handleSubmit(onSubmit)}
+                        onSubmit={handleSubmit(sendReq)}
                         style={{ textAlign: 'center', marginTop: '18px' }}
                     >
                         <Text fontWeight="bold" fontSize="md">
@@ -147,10 +140,11 @@ const Home = () => {
                             marginTop="4"
                             size="lg"
                             textColor="whitesmoke"
-                            _hover={{ bg: '#b0152f', textColor: 'whitesmoke' }}
+                            _hover={{textColor: 'black' }}
                             bgColor="#e94560"
                             type="submit"
                             isLoading={buttonIsLoading}
+                            isDisabled={disabled}
                             loadingText="Submitting"
                         >
                             Send
