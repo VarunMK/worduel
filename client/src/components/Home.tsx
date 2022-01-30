@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    Flex,
     FormControl,
     FormLabel,
     Heading,
@@ -9,9 +10,10 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import { evaluate } from '../utils/eval';
+import { evaluate,areEqual } from '../utils/eval';
 import { makeToast } from '../utils/handleMsgs';
 import { useForm } from 'react-hook-form';
+import { MainGrid } from './Grid/MainGrid';
 
 const socket = io('http://localhost:8080');
 
@@ -22,7 +24,10 @@ const Home = () => {
     const [word, setWord] = useState<String>('');
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
     const { register, handleSubmit, control } = useForm();
-    var tries = 0;
+    // const [gameData,setGameData]=useState<Array<Array<number>>>([[],[],[],[],[],[]]);
+    localStorage['tries']=0;
+    var tries;
+    var gameData=Array.from(Array(6), () => new Array(5))
     const onSubmit = (formData: any) => {
         setButtonLoading(true);
         if (formData.roomId.length < 5) {
@@ -64,13 +69,18 @@ const Home = () => {
     }, []);
     const sendReq = (formData: any) => {
         var data = evaluate(formData.gameresp, word);
+        tries=localStorage['tries'];
+        tries=Number(tries);
+        gameData[tries]=data;
         tries += 1;
+        localStorage['tries']=tries;
+        console.log(tries,gameData);
         socket.emit('sendresp',room,data);
-        if (tries == 5 && data==[2,2,2,2,2]) {
+        if (tries == 6 && areEqual(data,[2,2,2,2,2])) {
             makeToast('Congrats!','The word was: '+word,'success');
             setDisabled(true);
         }
-        else if(tries==5){
+        else if(tries==6){
             makeToast("Sorry you didn't guess the word :(","The word was: "+word,"warning");
             setDisabled(true);
         }
@@ -123,6 +133,11 @@ const Home = () => {
                         </Button>
                     </form>
                 ) : (
+                    <>
+                    <Flex direction="column" justifyContent="center" textAlign="center">
+                    <Box width="80%" margin="0 auto">
+                    <MainGrid data={gameData}/>
+                    </Box>
                     <form
                         onSubmit={handleSubmit(sendReq)}
                         style={{ textAlign: 'center', marginTop: '18px' }}
@@ -150,6 +165,8 @@ const Home = () => {
                             Send
                         </Button>
                     </form>
+                    </Flex>
+                    </>
                 )}
             </Box>
         </>
