@@ -1,13 +1,17 @@
-import { GridItem, Grid, SimpleGrid, Box } from '@chakra-ui/react';
-import { Cell } from './Cell';
+import { Text,GridItem, Grid, SimpleGrid, Box } from '@chakra-ui/react';
+import {CompleteRow} from './CompleteRow'
 
 type Props = {
-    state: Number;
+    data:any,
+    resp:Array<String>;
 };
 
-export const MainGrid = (data: any) => {
+export const MainGrid = ({data,resp}:Props) => {
     return (
-        <Grid templateColumns="repeat(5, 1fr)" gap={4} columnGap={1}>
-        </Grid>
+        <>
+        {data.map((r:Array<Number>,index:number)=>{
+            <CompleteRow crosscheck={r} value={resp[index]}/>
+        })}
+        </>
     );
 };
