@@ -7,18 +7,21 @@ type Props={
 }
 
 export const Cell=({verd,strval}:Props)=>{
-    const [color,setColor]=useState<String>("");
+    var color='';
     if(verd==0){
-        setColor('white')
+        color='white';
     }
     else if(verd==1){
-        setColor('yellow');
+        color='yellow';
+    }
+    else if(verd==2){
+        color='green';
     }
     else{
-        setColor('green');
+        color='white';
     }
     return(
-        <Box bg={String(color)} w="14" h="14" border="solid" display="flex" justifyContent="center" mx="0.5" text="lg">
+        <Box bg={String(color)} w="14" h="14" border="solid" display="inline-flex" justifyContent="center" mx="0.5" fontSize="2rem" fontWeight="bold">
             {strval}
         </Box>
     );

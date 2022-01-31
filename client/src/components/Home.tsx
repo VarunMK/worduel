@@ -14,6 +14,8 @@ import { evaluate, areEqual } from '../utils/eval';
 import { makeToast } from '../utils/handleMsgs';
 import { useForm } from 'react-hook-form';
 import { MainGrid } from './Grid/MainGrid';
+import { CompleteRow } from './Grid/CompleteRow';
+import { Cell } from './Grid/Cell';
 
 const socket = io('http://localhost:8080');
 
@@ -22,12 +24,15 @@ const Home = () => {
     const [conn, setConn] = useState<boolean>(false);
     const [disabled, setDisabled] = useState<boolean>(true);
     const [word, setWord] = useState<String>('');
-    const [wordData,setWordData]=useState<Array<String>>([]);
-    const [gameData,setgameData]=useState<Array<Array<Number>>>([]);
+    const [prevWord, setPrevWord] = useState<String>('');
+    const [wordData, setWordData] = useState<Array<String>>([]);
+    const [gameData, setgameData] = useState<Array<Array<Number>>>([]);
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
+    const [tries, setTries] = useState<number>(0);
     const { register, handleSubmit, control } = useForm();
-    localStorage['tries'] = 0;
-    var tries;
+    // var rem = 0;
+    // rem = 6 - gameData.length;
+    // var dummy = Array(rem).fill(0);
     const onSubmit = (formData: any) => {
         setButtonLoading(true);
         if (formData.roomId.length < 5) {
@@ -79,28 +84,48 @@ const Home = () => {
             makeToast(message, '', 'success');
         });
     }, []);
+    // useEffect(()=>{
+    //     // var temp=wordData;
+    //     // var t=localStorage['tries'];
+    //     // t=Number(t);
+    //     // temp[t]=prevWord;
+    //     // setWordData((wordData)=>[...wordData,...temp]);
+    // },[tries]);
     const sendReq = (formData: any) => {
-        var data = evaluate(formData.gameresp, word);
-        tries = localStorage['tries'];
-        tries = Number(tries);
-        var temp=wordData;
-        temp[tries]=formData.gameresp;
-        var temp2=gameData;
-        temp2[tries]=data;
-        setgameData(temp2);
-        setWordData(temp);
-        tries += 1;
-        localStorage['tries'] = tries;
-        socket.emit('sendresp', room, data);
-        if (areEqual(gameData[gameData.length-1], [2, 2, 2, 2, 2])) {
-            makeToast('Congrats!', 'The word was: ' + word, 'success');
-            setDisabled(true);
-        } else if (tries == 6) {
-            makeToast(
-                "Sorry you didn't guess the word :(",
-                'The word was: ' + word,
-                'warning'
-            );
+        if (tries < 6) {
+            var data = evaluate(formData.gameresp, word);
+            var temp = wordData;
+            temp[tries] = formData.gameresp;
+            var temp2 = gameData;
+            temp2[tries] = data;
+            setWordData(temp);
+            setgameData(temp2);
+            setPrevWord(formData.gameresp);
+            setTries(tries + 1);
+            socket.emit('sendresp', room, data);
+            if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
+                makeToast('Congrats!', 'The word was: ' + word, 'success');
+                setDisabled(true);
+            } else if (tries == 6) {
+                makeToast(
+                    "Sorry you didn't guess the word :(",
+                    'The word was: ' + word,
+                    'warning'
+                );
+                setDisabled(true);
+            }
+        } else {
+            if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
+                makeToast('Congrats!', 'The word was: ' + word, 'success');
+                setDisabled(true);
+            } else if (tries == 6) {
+                makeToast(
+                    "Sorry you didn't guess the word :(",
+                    'The word was: ' + word,
+                    'warning'
+                );
+                setDisabled(true);
+            }
             setDisabled(true);
         }
     };
@@ -122,7 +147,37 @@ const Home = () => {
                 color="black.200"
                 textAlign="center"
             >
-                <MainGrid data={gameData} resp={wordData} />
+                {/* {gameData.length > 0 ? (
+                    <>
+                        {gameData.map((r: Array<Number>, index1: number) => {
+                            <Flex mb="1" justifyContent="center">
+                                {r.map((val, index2) => {
+                                    <Cell
+                                        verd={val}
+                                        strval={wordData[index1][index2]}
+                                    />;
+                                })}
+                            </Flex>;
+                        })}
+                    </>
+                ) : (
+                    <>
+                        {dummy.map((_, index) => {
+                            <Flex mb="1" justifyContent="center">
+                                <Box
+                                    bg='black'
+                                    w="14"
+                                    h="14"
+                                    border="solid"
+                                    display="flex"
+                                    justifyContent="center"
+                                    mx="0.5"
+                                    text="lg"
+                                ></Box>
+                            </Flex>;
+                        })}
+                    </>
+                )} */}
                 {!conn ? (
                     <>
                         <form
@@ -159,6 +214,7 @@ const Home = () => {
                     </>
                 ) : (
                     <>
+                        <MainGrid data={gameData} resp={wordData} />
                         <Flex
                             direction="column"
                             justifyContent="center"
