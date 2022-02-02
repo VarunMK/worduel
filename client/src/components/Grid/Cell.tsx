@@ -9,20 +9,20 @@ type Props={
 export const Cell=({verd,strval}:Props)=>{
     var color='';
     if(verd==0){
-        color='#FAFAFA';
+        color='#787c7e';
     }
     else if(verd==1){
-        color='#fedc56';
+        color='#FCD12A';
     }
     else if(verd==2){
-        color='#06c258';
+        color='#6aaa64';
     }
     else{
         color='#FAFAFA';
     }
     return(
-        <Box bg={String(color)} w="14" h="14" border="solid 2px" display="inline-flex" borderRadius="9" justifyContent="center" mx="0.5" fontSize="2rem" fontWeight="bold">
-            <Text color="#202020">{strval}</Text>
+        <Box bg={String(color)} w="14" h="14" border="solid 2px" display="inline-flex" borderRadius="4" justifyContent="center" mx="0.5" fontSize="2rem" fontWeight="bold">
+            <Text color="whitesmoke" mt="1">{strval}</Text>
         </Box>
     );
 }

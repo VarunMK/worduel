@@ -7,6 +7,8 @@ import {
     Heading,
     Input,
     Link,
+    PinInput,
+    PinInputField,
     Text,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
@@ -23,6 +25,7 @@ const Home = () => {
     const [conn, setConn] = useState<boolean>(false);
     const [disabled, setDisabled] = useState<boolean>(true);
     const [word, setWord] = useState<String>('');
+    const [gameresp,setGameResp]=useState<String>('');
     const [wordData, setWordData] = useState<Array<String>>([]);
     const [gameData, setgameData] = useState<Array<Array<Number>>>([]);
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
@@ -79,11 +82,12 @@ const Home = () => {
             makeToast(message, '', 'success');
         });
     }, []);
-    const sendReq = (formData: any) => {
+    const sendReq = (e:any) => {
+        e.preventDefault();
         if (tries < 6) {
-            var data = evaluate(formData.gameresp, word);
+            var data = evaluate(gameresp, word);
             var temp = wordData;
-            temp[tries] = formData.gameresp;
+            temp[tries] = gameresp;
             var temp2 = gameData;
             temp2[tries] = data;
             setWordData(temp);
@@ -91,7 +95,7 @@ const Home = () => {
             setTries(tries + 1);
             socket.emit('sendresp', room, data);
             if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
-                makeToast('Congrats!', 'The word was: ' + word, 'success');
+                makeToast('Congrats!', 'The word was: ' + word.toUpperCase(), 'success');
                 setDisabled(true);
             } else if (tries == 6) {
                 makeToast(
@@ -103,7 +107,7 @@ const Home = () => {
             }
         } else {
             if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
-                makeToast('Congrats!', 'The word was: ' + word, 'success');
+                makeToast('Congrats!', 'The word was: ' + word.toUpperCase(), 'success');
                 setDisabled(true);
             } else if (tries == 6) {
                 makeToast(
@@ -182,7 +186,7 @@ const Home = () => {
                             <Box width="80%" margin="0 auto"></Box>
                             <form
                                 id="resp-form"
-                                onSubmit={handleSubmit(sendReq)}
+                                onSubmit={sendReq}
                                 style={{
                                     textAlign: 'center',
                                     marginTop: '18px',
@@ -191,13 +195,23 @@ const Home = () => {
                                 <Text fontWeight="bold" fontSize="md">
                                     Your Guess:
                                 </Text>
-                                <Input
+                                <Flex flexDirection="column">
+                                <Box>
+                                <PinInput placeholder="" type="alphanumeric" onComplete={(v)=>{setGameResp(v)}}>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
+                                </PinInput>
+                                </Box>
+                                {/* <Input
                                     htmlFor="gameresp"
                                     type="text"
                                     {...register('gameresp')}
                                     width="90%"
                                     flex={{ lg: '1', base: 'none' }}
-                                />
+                                /> */}
                                 <Button
                                     marginTop="4"
                                     size="lg"
@@ -211,6 +225,7 @@ const Home = () => {
                                 >
                                     Send
                                 </Button>
+                                </Flex>
                             </form>
                         </Flex>
                     </>

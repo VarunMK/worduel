@@ -11,11 +11,11 @@ export const CompleteRow = ({ crosscheck, value }: Props) => {
     if (crosscheck.length == 0 && value == '') {
         return (
             <Flex mb="1" justifyContent="center">
-                <Cell verd={' '} strval={' '} />
-                <Cell verd={' '} strval={' '} />
-                <Cell verd={' '} strval={' '} />
-                <Cell verd={' '} strval={' '} />
-                <Cell verd={' '} strval={' '} />
+                <Cell verd={4} strval={' '} />
+                <Cell verd={4} strval={' '} />
+                <Cell verd={4} strval={' '} />
+                <Cell verd={4} strval={' '} />
+                <Cell verd={4} strval={' '} />
             </Flex>
         );
     }
