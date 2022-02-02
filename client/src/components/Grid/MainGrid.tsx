@@ -7,7 +7,6 @@ type Props = {
 };
 
 export const MainGrid = ({ data, resp }: Props) => {
-    console.log(data, resp);
     var rem = 0;
     rem = 6 - data.length;
     var dummy = Array(rem).fill(0);

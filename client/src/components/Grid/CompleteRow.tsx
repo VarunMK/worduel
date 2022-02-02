@@ -7,7 +7,6 @@ type Props = {
 };
 
 export const CompleteRow = ({ crosscheck, value }: Props) => {
-    console.log(crosscheck, value);
     if (crosscheck.length == 0 && value == '') {
         return (
             <Flex mb="1" justifyContent="center">

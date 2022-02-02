@@ -84,6 +84,10 @@ const Home = () => {
     }, []);
     const sendReq = (e:any) => {
         e.preventDefault();
+        if(gameresp.search(/^[a-zA-Z]*$/)===-1){
+            makeToast('Make sure your word is correct','Letters entered should be an alphabet.','error');
+            return;
+        }
         if (tries < 6) {
             var data = evaluate(gameresp, word);
             var temp = wordData;
@@ -198,20 +202,33 @@ const Home = () => {
                                 <Flex flexDirection="column">
                                 <Box>
                                 <PinInput placeholder="" type="alphanumeric" onComplete={(v)=>{setGameResp(v)}}>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
+                                        if(Number.isInteger(Number(e.target.value))){
+                                            e.target.value=''
+                                        }
+                                    }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
+                                        if(Number.isInteger(Number(e.target.value))){
+                                            e.target.value=''
+                                        }
+                                    }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
+                                        if(Number.isInteger(Number(e.target.value))){
+                                            e.target.value=''
+                                        }
+                                    }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
+                                        if(Number.isInteger(Number(e.target.value))){
+                                            e.target.value=''
+                                        }
+                                    }}/>
+                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
+                                        if(Number.isInteger(Number(e.target.value))){
+                                            e.target.value=''
+                                        }
+                                    }}/>
                                 </PinInput>
                                 </Box>
-                                {/* <Input
-                                    htmlFor="gameresp"
-                                    type="text"
-                                    {...register('gameresp')}
-                                    width="90%"
-                                    flex={{ lg: '1', base: 'none' }}
-                                /> */}
                                 <Button
                                     marginTop="4"
                                     size="lg"
