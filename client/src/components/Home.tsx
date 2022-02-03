@@ -28,7 +28,10 @@ const Home = () => {
     const [gameresp, setGameResp] = useState<String>('');
     const [wordData, setWordData] = useState<Array<String>>([]);
     const [gameData, setgameData] = useState<Array<Array<Number>>>([]);
+    const [oppwordData, setOppWordData] = useState<Array<String>>([]);
+    const [oppgameData, setOppGameData] = useState<Array<Array<Number>>>([]);
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
+    const [sec,setSec]=useState<boolean>(true);
     const [tries, setTries] = useState<number>(0);
     const { register, handleSubmit, control } = useForm();
     const onSubmit = (formData: any) => {
@@ -52,18 +55,18 @@ const Home = () => {
             if (no_of_users == 1) {
                 makeToast(message, 'Invite others to the room!', 'success');
             } else {
+                setSec(false);
                 makeToast(
                     message,
                     'Both the players have joined the lobby!',
                     'success'
                 );
-                setDisabled(false);
             }
             setWord(resp);
         });
         socket.on('secondplrjoined', (msg) => {
+            setSec(false);
             if (msg) {
-                setDisabled(false);
                 makeToast(
                     'New Player Joined!',
                     'Both the players have joined the lobby!',
@@ -78,8 +81,13 @@ const Home = () => {
         socket.on('disconnect', () => {
             console.log('Socket disconnected Sadge');
         });
-        socket.on('oppresp', (message) => {
-            makeToast(message, '', 'success');
+        socket.on('oppresp', (message,opp_gameresp) => {
+            var temp = oppwordData;
+            temp[oppwordData.length] = opp_gameresp;
+            var temp2 = oppgameData;
+            temp2[oppgameData.length] = message;
+            setOppWordData(temp);
+            setOppGameData(temp2);
         });
     }, []);
     const sendReq = (e: any) => {
@@ -101,7 +109,7 @@ const Home = () => {
             setWordData(temp);
             setgameData(temp2);
             setTries(tries + 1);
-            socket.emit('sendresp', room, data);
+            socket.emit('sendresp', room, data,gameresp);
             if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
                 makeToast(
                     'Congrats!',
@@ -197,7 +205,7 @@ const Home = () => {
                         </Box>
                     ) : (
                         <>
-                            <MainGrid data={gameData} resp={wordData} />
+                            <MainGrid data={gameData} resp={wordData} s="1st"/>
                             <Flex
                                 direction="column"
                                 justifyContent="center"
@@ -220,8 +228,14 @@ const Home = () => {
                                             <PinInput
                                                 placeholder=""
                                                 type="alphanumeric"
-                                                onComplete={(v) => {
+                                                onChange={(v) => {
                                                     setGameResp(v);
+                                                    if(v.length==5){
+                                                        setDisabled(false);
+                                                    }
+                                                    else{
+                                                        setDisabled(true);
+                                                    }
                                                 }}
                                             >
                                                 <PinInputField
@@ -364,7 +378,23 @@ const Home = () => {
                     color="black.200"
                     textAlign="center"
                 >
-                    <MainGrid data={gameData} resp={wordData} />
+                    <Flex flexDirection="row">
+                        <Text
+                            fontWeight="bold"
+                            fontSize="md"
+                            textAlign="left"
+                            mb="2"
+                            mr="2"
+                        >
+                            Opponent:
+                        </Text>
+                        {!sec ? (
+                            <Text color="#6aaa64" fontSize="md" fontWeight="bold">Connected</Text>
+                        ) : (
+                            <></>
+                        )}
+                    </Flex>
+                    <MainGrid data={oppgameData} resp={oppwordData} s="2nd"/>
                 </Box>
             </Flex>
             <Box

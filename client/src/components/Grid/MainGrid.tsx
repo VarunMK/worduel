@@ -4,12 +4,18 @@ import { CompleteRow } from './CompleteRow';
 type Props = {
     data: any;
     resp: Array<String>;
+    s:string,
 };
 
-export const MainGrid = ({ data, resp }: Props) => {
+export const MainGrid = ({ data, resp,s }: Props) => {
     var rem = 0;
     rem = 6 - data.length;
     var dummy = Array(rem).fill(0);
+    if(s=="2nd"){
+        for(let i=0;i<resp.length;i++){
+            resp[i]="     ";
+        }
+    }
     return (
         <>
             {data.length > 0 ? (

@@ -34,8 +34,8 @@ io.on("connection", (socket) => {
       console.log(err);
     });
   })
-  socket.on('sendresp',(roomId,msg)=>{
-    socket.to(roomId).emit('oppresp',msg);
+  socket.on('sendresp',(roomId,msg,gameresp)=>{
+    socket.to(roomId).emit('oppresp',msg,gameresp);
   })
 });
 
