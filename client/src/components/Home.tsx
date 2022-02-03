@@ -25,7 +25,7 @@ const Home = () => {
     const [conn, setConn] = useState<boolean>(false);
     const [disabled, setDisabled] = useState<boolean>(true);
     const [word, setWord] = useState<String>('');
-    const [gameresp,setGameResp]=useState<String>('');
+    const [gameresp, setGameResp] = useState<String>('');
     const [wordData, setWordData] = useState<Array<String>>([]);
     const [gameData, setgameData] = useState<Array<Array<Number>>>([]);
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
@@ -82,10 +82,14 @@ const Home = () => {
             makeToast(message, '', 'success');
         });
     }, []);
-    const sendReq = (e:any) => {
+    const sendReq = (e: any) => {
         e.preventDefault();
-        if(gameresp.search(/^[a-zA-Z]*$/)===-1){
-            makeToast('Make sure your word is correct','Letters entered should be an alphabet.','error');
+        if (gameresp.search(/^[a-zA-Z]*$/) === -1) {
+            makeToast(
+                'Make sure your word is correct',
+                'Letters entered should be an alphabet.',
+                'error'
+            );
             return;
         }
         if (tries < 6) {
@@ -99,7 +103,11 @@ const Home = () => {
             setTries(tries + 1);
             socket.emit('sendresp', room, data);
             if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
-                makeToast('Congrats!', 'The word was: ' + word.toUpperCase(), 'success');
+                makeToast(
+                    'Congrats!',
+                    'The word was: ' + word.toUpperCase(),
+                    'success'
+                );
                 setDisabled(true);
             } else if (tries == 6) {
                 makeToast(
@@ -111,7 +119,11 @@ const Home = () => {
             }
         } else {
             if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
-                makeToast('Congrats!', 'The word was: ' + word.toUpperCase(), 'success');
+                makeToast(
+                    'Congrats!',
+                    'The word was: ' + word.toUpperCase(),
+                    'success'
+                );
                 setDisabled(true);
             } else if (tries == 6) {
                 makeToast(
@@ -131,123 +143,230 @@ const Home = () => {
                     Worduel
                 </Heading>
             </Box>
-            <Box
-                borderRadius="20"
-                my="160"
-                mx="auto"
-                py="22"
-                border="1px solid rgba(0, 0, 0, 0.05);"
-                boxShadow="-2px -2px 8px rgba(0, 0, 0, 0.02), 6px 6px 12px rgba(0, 0, 0, 0.08);"
-                px="45"
-                backgroundColor="#FAFAFA"
-                width="35%"
-                color="black.200"
-                textAlign="center"
-            >
-                {!conn ? (
-                    <>
-                        <form
-                            id="create-room-form"
-                            onSubmit={handleSubmit(onSubmit)}
-                            style={{ textAlign: 'center', marginTop: '18px' }}
-                        >
-                            <FormControl id="roomId">
-                                <FormLabel fontWeight="bold" fontSize="md">
-                                    Join a room / Create a room:
-                                </FormLabel>
-                                <Input
-                                    htmlFor="roomId"
-                                    type="text"
-                                    {...register('roomId')}
-                                    flex={{ lg: '1', base: 'none' }}
-                                />
-                            </FormControl>
-                            <Button
-                                marginTop="4"
-                                size="lg"
-                                textColor="whitesmoke"
-                                _hover={{
-                                    bg: '#b0152f',
-                                    textColor: 'whitesmoke',
-                                }}
-                                bgColor="#e94560"
-                                type="submit"
-                                isLoading={buttonIsLoading}
-                                loadingText="Submitting"
-                            >
-                                Submit
-                            </Button>
-                        </form>
-                    </>
-                ) : (
-                    <>
-                        <MainGrid data={gameData} resp={wordData} />
-                        <Flex
-                            direction="column"
-                            justifyContent="center"
-                            textAlign="center"
-                        >
-                            <Box width="80%" margin="0 auto"></Box>
+            <Flex justifyContent="center">
+                <Box
+                    borderRadius="20"
+                    my="160"
+                    ml="auto"
+                    py="22"
+                    border="1px solid rgba(0, 0, 0, 0.05);"
+                    boxShadow="-2px -2px 8px rgba(0, 0, 0, 0.02), 6px 6px 12px rgba(0, 0, 0, 0.08);"
+                    px="45"
+                    backgroundColor="#FAFAFA"
+                    width="35%"
+                    color="black.200"
+                    textAlign="center"
+                >
+                    {!conn ? (
+                        <Box>
                             <form
-                                id="resp-form"
-                                onSubmit={sendReq}
+                                id="create-room-form"
+                                onSubmit={handleSubmit(onSubmit)}
                                 style={{
                                     textAlign: 'center',
-                                    marginTop: '18px',
+                                    marginTop: '120px',
                                 }}
                             >
-                                <Text fontWeight="bold" fontSize="md">
-                                    Your Guess:
-                                </Text>
-                                <Flex flexDirection="column">
-                                <Box>
-                                <PinInput placeholder="" type="alphanumeric" onComplete={(v)=>{setGameResp(v)}}>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
-                                        if(Number.isInteger(Number(e.target.value))){
-                                            e.target.value=''
-                                        }
-                                    }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
-                                        if(Number.isInteger(Number(e.target.value))){
-                                            e.target.value=''
-                                        }
-                                    }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
-                                        if(Number.isInteger(Number(e.target.value))){
-                                            e.target.value=''
-                                        }
-                                    }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
-                                        if(Number.isInteger(Number(e.target.value))){
-                                            e.target.value=''
-                                        }
-                                    }}/>
-                                    <PinInputField mr="2" ml="2" flex={{ lg: '1', base: 'none' }} textTransform="uppercase" onChange={(e)=>{
-                                        if(Number.isInteger(Number(e.target.value))){
-                                            e.target.value=''
-                                        }
-                                    }}/>
-                                </PinInput>
-                                </Box>
+                                <FormControl id="roomId">
+                                    <FormLabel fontWeight="bold" fontSize="md">
+                                        Join a room / Create a room:
+                                    </FormLabel>
+                                    <Input
+                                        htmlFor="roomId"
+                                        type="text"
+                                        {...register('roomId')}
+                                        flex={{ lg: '1', base: 'none' }}
+                                    />
+                                </FormControl>
                                 <Button
                                     marginTop="4"
                                     size="lg"
                                     textColor="whitesmoke"
-                                    _hover={{ textColor: 'black' }}
+                                    _hover={{
+                                        bg: '#b0152f',
+                                        textColor: 'whitesmoke',
+                                    }}
                                     bgColor="#e94560"
                                     type="submit"
                                     isLoading={buttonIsLoading}
-                                    isDisabled={disabled}
                                     loadingText="Submitting"
                                 >
-                                    Send
+                                    Submit
                                 </Button>
-                                </Flex>
                             </form>
-                        </Flex>
-                    </>
-                )}
-            </Box>
+                        </Box>
+                    ) : (
+                        <>
+                            <MainGrid data={gameData} resp={wordData} />
+                            <Flex
+                                direction="column"
+                                justifyContent="center"
+                                textAlign="center"
+                            >
+                                <Box width="80%" margin="0 auto"></Box>
+                                <form
+                                    id="resp-form"
+                                    onSubmit={sendReq}
+                                    style={{
+                                        textAlign: 'center',
+                                        marginTop: '18px',
+                                    }}
+                                >
+                                    <Text fontWeight="bold" fontSize="md">
+                                        Your Guess:
+                                    </Text>
+                                    <Flex flexDirection="column">
+                                        <Box>
+                                            <PinInput
+                                                placeholder=""
+                                                type="alphanumeric"
+                                                onComplete={(v) => {
+                                                    setGameResp(v);
+                                                }}
+                                            >
+                                                <PinInputField
+                                                    mr="2"
+                                                    ml="2"
+                                                    flex={{
+                                                        lg: '1',
+                                                        base: 'none',
+                                                    }}
+                                                    textTransform="uppercase"
+                                                    onChange={(e) => {
+                                                        if (
+                                                            Number.isInteger(
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        ) {
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                />
+                                                <PinInputField
+                                                    mr="2"
+                                                    ml="2"
+                                                    flex={{
+                                                        lg: '1',
+                                                        base: 'none',
+                                                    }}
+                                                    textTransform="uppercase"
+                                                    onChange={(e) => {
+                                                        if (
+                                                            Number.isInteger(
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        ) {
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                />
+                                                <PinInputField
+                                                    mr="2"
+                                                    ml="2"
+                                                    flex={{
+                                                        lg: '1',
+                                                        base: 'none',
+                                                    }}
+                                                    textTransform="uppercase"
+                                                    onChange={(e) => {
+                                                        if (
+                                                            Number.isInteger(
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        ) {
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                />
+                                                <PinInputField
+                                                    mr="2"
+                                                    ml="2"
+                                                    flex={{
+                                                        lg: '1',
+                                                        base: 'none',
+                                                    }}
+                                                    textTransform="uppercase"
+                                                    onChange={(e) => {
+                                                        if (
+                                                            Number.isInteger(
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        ) {
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                />
+                                                <PinInputField
+                                                    mr="2"
+                                                    ml="2"
+                                                    flex={{
+                                                        lg: '1',
+                                                        base: 'none',
+                                                    }}
+                                                    textTransform="uppercase"
+                                                    onChange={(e) => {
+                                                        if (
+                                                            Number.isInteger(
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        ) {
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                />
+                                            </PinInput>
+                                        </Box>
+                                        <Button
+                                            marginTop="4"
+                                            size="lg"
+                                            textColor="whitesmoke"
+                                            _hover={{ textColor: 'black' }}
+                                            bgColor="#e94560"
+                                            type="submit"
+                                            isLoading={buttonIsLoading}
+                                            isDisabled={disabled}
+                                            loadingText="Submitting"
+                                        >
+                                            Send
+                                        </Button>
+                                    </Flex>
+                                </form>
+                            </Flex>
+                        </>
+                    )}
+                </Box>
+                <Box
+                    borderRadius="20"
+                    my="160"
+                    mr="auto"
+                    height="0%"
+                    ml="4"
+                    py="22"
+                    px="8"
+                    border="1px solid rgba(0, 0, 0, 0.05);"
+                    boxShadow="-2px -2px 8px rgba(0, 0, 0, 0.02), 6px 6px 12px rgba(0, 0, 0, 0.08);"
+                    backgroundColor="#FAFAFA"
+                    color="black.200"
+                    textAlign="center"
+                >
+                    <MainGrid data={gameData} resp={wordData} />
+                </Box>
+            </Flex>
             <Box
                 position="fixed"
                 width="100%"
