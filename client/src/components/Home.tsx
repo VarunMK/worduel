@@ -7,9 +7,17 @@ import {
     Heading,
     Input,
     Link,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
     PinInput,
     PinInputField,
     Text,
+    useDisclosure,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
@@ -31,8 +39,12 @@ const Home = () => {
     const [oppwordData, setOppWordData] = useState<Array<String>>([]);
     const [oppgameData, setOppGameData] = useState<Array<Array<Number>>>([]);
     const [buttonIsLoading, setButtonLoading] = useState<boolean>(false);
-    const [sec,setSec]=useState<boolean>(true);
+    const [sec, setSec] = useState<boolean>(true);
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const [tries, setTries] = useState<number>(0);
+    const [opp, setOpp] = useState<String>('0');
+    const [player, setPlayer] = useState<String>('0');
+    const [oppTries, setoppTries] = useState<number>(0);
     const { register, handleSubmit, control } = useForm();
     const onSubmit = (formData: any) => {
         setButtonLoading(true);
@@ -52,7 +64,7 @@ const Home = () => {
         socket.on('connectionsuccessful', (message, no_of_users, resp) => {
             setButtonLoading(false);
             setConn(true);
-            if (no_of_users == 1) {
+            if (no_of_users === 1) {
                 makeToast(message, 'Invite others to the room!', 'success');
             } else {
                 setSec(false);
@@ -81,13 +93,36 @@ const Home = () => {
         socket.on('disconnect', () => {
             console.log('Socket disconnected Sadge');
         });
-        socket.on('oppresp', (message,opp_gameresp) => {
+        socket.on('oppresp', (message, opp_gameresp) => {
             var temp = oppwordData;
             temp[oppwordData.length] = opp_gameresp;
             var temp2 = oppgameData;
             temp2[oppgameData.length] = message;
+            var t = oppgameData.length;
+            setoppTries(t);
             setOppWordData(temp);
             setOppGameData(temp2);
+            var k = String(oppgameData.length);
+            if (
+                areEqual(oppgameData[oppgameData.length - 1], [2, 2, 2, 2, 2])
+            ) {
+                setOpp(k);
+                makeToast(
+                    'Opponent finished!',
+                    'Your opponent finished in: ' +
+                    oppgameData.length +
+                    ' tries',
+                    'success'
+                    );
+                if((areEqual(gameData[gameData.length-1],[2,2,2,2,2]) || gameData.length===6) && isOpen===false){
+                    onOpen()
+                }
+            } else if (oppgameData.length === 6) {
+                setOpp("X");
+                if((areEqual(gameData[gameData.length-1],[2,2,2,2,2]) || gameData.length===6) && isOpen===false){
+                    onOpen()
+                }
+            }
         });
     }, []);
     const sendReq = (e: any) => {
@@ -109,21 +144,30 @@ const Home = () => {
             setWordData(temp);
             setgameData(temp2);
             setTries(tries + 1);
-            socket.emit('sendresp', room, data,gameresp);
+            socket.emit('sendresp', room, data, gameresp);
+            var p = gameData.length;
             if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
+                setPlayer(String(p));
                 makeToast(
                     'Congrats!',
-                    'The word was: ' + word.toUpperCase(),
+                    'You finished in: ' + gameData.length + ' tries',
                     'success'
                 );
                 setDisabled(true);
-            } else if (tries == 6) {
+                if((areEqual(oppgameData[oppgameData.length-1],[2,2,2,2,2]) || oppgameData.length===6) && isOpen===false){
+                    onOpen()
+                }
+            } else if (p === 6) {
+                setPlayer("X");
                 makeToast(
                     "Sorry you didn't guess the word :(",
                     'The word was: ' + word,
                     'warning'
                 );
                 setDisabled(true);
+                if((areEqual(oppgameData[oppgameData.length-1],[2,2,2,2,2]) || oppgameData.length===6) && isOpen===false){
+                    onOpen()
+                }
             }
         } else {
             if (areEqual(gameData[gameData.length - 1], [2, 2, 2, 2, 2])) {
@@ -133,7 +177,7 @@ const Home = () => {
                     'success'
                 );
                 setDisabled(true);
-            } else if (tries == 6) {
+            } else if (tries === 6) {
                 makeToast(
                     "Sorry you didn't guess the word :(",
                     'The word was: ' + word,
@@ -146,6 +190,43 @@ const Home = () => {
     };
     return (
         <>
+            <Modal isCentered isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Results!</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        {Number(opp) < Number(player) ? (
+                            <>
+                                <Text>You Lost :(</Text>
+                                <Text>You took: {player} tries</Text>
+                                <Text>Opponent took: {opp} tries</Text>
+                            </>
+                        ) : (
+                            [
+                                Number(opp) === Number(player) ? (
+                                    <>
+                                        <Text>It's a tie!</Text>
+                                        <Text>You took: {player} tries</Text>
+                                        <Text>Opponent took: {opp} tries</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Text>You Won!</Text>
+                                        <Text>You took: {player} tries</Text>
+                                        <Text>Opponent took: {opp} tries</Text>
+                                    </>
+                                ),
+                            ]
+                        )}
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button colorScheme="blue" mr={3} onClick={onClose}>
+                            Share Results
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
             <Box backgroundColor="gray.100" py="3" bg="black">
                 <Heading textAlign="center" color="whitesmoke">
                     Worduel
@@ -181,6 +262,8 @@ const Home = () => {
                                     </FormLabel>
                                     <Input
                                         htmlFor="roomId"
+                                        maxLength={5}
+                                        textTransform="uppercase"
                                         type="text"
                                         {...register('roomId')}
                                         flex={{ lg: '1', base: 'none' }}
@@ -205,7 +288,7 @@ const Home = () => {
                         </Box>
                     ) : (
                         <>
-                            <MainGrid data={gameData} resp={wordData} s="1st"/>
+                            <MainGrid data={gameData} resp={wordData} s="1st" />
                             <Flex
                                 direction="column"
                                 justifyContent="center"
@@ -230,10 +313,9 @@ const Home = () => {
                                                 type="alphanumeric"
                                                 onChange={(v) => {
                                                     setGameResp(v);
-                                                    if(v.length==5){
+                                                    if (v.length === 5 && player==='0') {
                                                         setDisabled(false);
-                                                    }
-                                                    else{
+                                                    } else {
                                                         setDisabled(true);
                                                     }
                                                 }}
@@ -389,12 +471,18 @@ const Home = () => {
                             Opponent:
                         </Text>
                         {!sec ? (
-                            <Text color="#6aaa64" fontSize="md" fontWeight="bold">Connected</Text>
+                            <Text
+                                color="#6aaa64"
+                                fontSize="md"
+                                fontWeight="bold"
+                            >
+                                Connected
+                            </Text>
                         ) : (
                             <></>
                         )}
                     </Flex>
-                    <MainGrid data={oppgameData} resp={oppwordData} s="2nd"/>
+                    <MainGrid data={oppgameData} resp={oppwordData} s="2nd" />
                 </Box>
             </Flex>
             <Box
@@ -412,6 +500,7 @@ const Home = () => {
                 >
                     Inspired by{' '}
                     <Link
+                        isExternal={true}
                         href="https://www.powerlanguage.co.uk/wordle/"
                         style={{ color: '#e94560', textDecoration: 'none' }}
                     >

@@ -3,7 +3,7 @@ const server=require('http').createServer(app);
 const Redis=require('redis');
 const redisClient=Redis.createClient();
 redisClient.connect();
-const cstttl=3600;
+const cstttl=1200;
 
 const io = require("socket.io")(server, {
   cors: {
